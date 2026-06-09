@@ -1,0 +1,49 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches:
+      - 19.0
+    paths:
+      - 'MANUAL_DE_USO.md'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Prepare Documentation Folder
+        run: |
+          mkdir -p docs-out/19
+          cp MANUAL_DE_USO.md docs-out/19/index.md
+          
+          # Create root index.md
+          cat << 'EOF' > docs-out/index.md
+          # Manuales de Uso - MBA Consultings
+          
+          Selecciona la versión del manual que deseas consultar:
+          
+          * [Manual OCA Account Financial Reporting - Odoo 18.0 (Estable)](18/)
+          * [Manual OCA Account Financial Reporting - Odoo 19.0 (Desarrollo)](19/)
+          EOF
+          
+          # Create Jekyll config
+          cat << 'EOF' > docs-out/_config.yml
+          theme: jekyll-theme-cayman
+          title: Manuales de Uso - MBA Consultings
+          description: Documentación de módulos OCA para Odoo 18.0 y 19.0
+          EOF
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs-out
+          branch: gh-pages
+          clean: false
